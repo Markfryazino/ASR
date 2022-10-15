@@ -1,6 +1,7 @@
 import random
 from pathlib import Path
 from random import shuffle
+import numpy as np
 
 import PIL
 import pandas as pd
@@ -117,6 +118,7 @@ class Trainer(BaseTrainer):
                 self._log_predictions(**batch)
                 self._log_spectrogram(batch["spectrogram"])
                 self._log_scalars(self.train_metrics)
+                self._log_audio(batch)
                 # we don't want to reset train metrics at the start of every epoch
                 # because we are interested in recent train metrics
                 last_train_metrics = self.train_metrics.result()
@@ -239,6 +241,15 @@ class Trainer(BaseTrainer):
         spectrogram = random.choice(spectrogram_batch.cpu())
         image = PIL.Image.open(plot_spectrogram_to_buf(spectrogram))
         self.writer.add_image("spectrogram", ToTensor()(image))
+
+    def _log_audio(self, batch, examples_num=5):
+        idx = np.random.choice(batch["audio"].shape[0], examples_num, replace=False)
+
+        for i in idx:
+            audio = batch["audio"][i]
+            text = batch["text"][i]
+            self.writer.add_audio(f"audio {i + 1}: '{text}'", audio, sample_rate=16000)
+
 
     @torch.no_grad()
     def get_grad_norm(self, norm_type=2):

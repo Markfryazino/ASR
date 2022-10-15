@@ -1,4 +1,5 @@
 from typing import List, NamedTuple
+from collections import defaultdict
 
 import torch
 
@@ -42,6 +43,27 @@ class CTCCharTextEncoder(CharTextEncoder):
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
         hypos: List[Hypothesis] = []
-        # TODO: your code here
-        raise NotImplementedError
+
+        paths = {('', CTCCharTextEncoder.EMPTY_TOK): 1.0}
+        for next_char_probs in probs:
+            paths = self._extend_and_merge(next_char_probs, paths)
+            paths = self.truncate_beam(paths, beam_size)
+        
+        for path, prob in paths.items():
+            hypos.append(Hypothesis(path[0], prob))
+
         return sorted(hypos, key=lambda x: x.prob, reverse=True)
+
+    def _extend_and_merge(self, next_char_probs, src_paths):
+        new_paths = defaultdict(float)
+        for next_char_ind, next_char_prob in enumerate(next_char_probs):
+            next_char = self.ind2char[next_char_ind]
+
+            for (text, last_char), path_prob in src_paths.items():
+                new_prefix = text if next_char == last_char else text + next_char
+                new_prefix = new_prefix.replace(CTCCharTextEncoder.EMPTY_TOK, '')
+                new_paths[(new_prefix, next_char)] += path_prob * next_char_prob
+        return new_paths
+
+    def truncate_beam(self, paths, beam_size):
+        return dict(sorted(paths.items(), key=lambda x: x[1])[-beam_size:])
