@@ -1,11 +1,15 @@
 # ASR project barebones
 
+В [do_everything.ipynb](/do_everything.ipynb) можно посмотреть на мои логи обучения и валидации.
+
+В [текст энкодере](/text_encoder/ctc_char_text_encoder.py) реализованы `custom_ctc_beam_search` (написанный руками бим сёрч с семинара) и `ctc_beam_search` (при помощи pyctcdecode).
+
 ## Как запустить
 
 1. Запускаем докер.
    ```shell
    docker build -t asr .
-   docker run asr
+   docker run -it asr
    ```
 1. Скачиваем языковую модель.
    ```shell
@@ -38,6 +42,16 @@
 Обучение можно запустить командой
 ```shell
 python3 train.py --config hw_asr/configs/balrog.json
+```
+
+Чтобы прогнать модель на тестах, запустите
+```shell
+python3 test.py \
+   -c hw_asr/configs/balrog_evaluation_test_other.json \
+   -r model_best.pth \
+   -t test_data \
+   -o test_result.json \
+   -b 5
 ```
 
 ## Recommended implementation order
