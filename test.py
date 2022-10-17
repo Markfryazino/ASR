@@ -63,21 +63,22 @@ def main(config, out_file, beam_size):
                 argmax = batch["argmax"][i]
                 argmax = argmax[: int(batch["log_probs_length"][i])]
                 current_texts = {
-                    "ground_trurh": batch["text"][i],
+                    "ground_truth": batch["text"][i],
+                    "ground_truth_normalized": text_encoder.normalize_text(batch["text"][i]),
                     "pred_text_argmax": text_encoder.ctc_decode(argmax.cpu().numpy()),
                     "pred_text_beam_search": text_encoder.ctc_beam_search(
                         batch["probs"][i], batch["log_probs_length"][i], beam_size=beam_size
                     )[:10],
                 }
 
-                current_texts["WER_argmax"] = calc_wer(current_texts["ground_trurh"], 
+                current_texts["WER_argmax"] = calc_wer(current_texts["ground_truth_normalized"], 
                                                        current_texts["pred_text_argmax"])
-                current_texts["WER_beam_search"] = calc_wer(current_texts["ground_trurh"], 
+                current_texts["WER_beam_search"] = calc_wer(current_texts["ground_truth_normalized"], 
                                                             current_texts["pred_text_beam_search"][0].text)
 
-                current_texts["CER_argmax"] = calc_cer(current_texts["ground_trurh"], 
+                current_texts["CER_argmax"] = calc_cer(current_texts["ground_truth_normalized"], 
                                                        current_texts["pred_text_argmax"])
-                current_texts["CER_beam_search"] = calc_cer(current_texts["ground_trurh"], 
+                current_texts["CER_beam_search"] = calc_cer(current_texts["ground_truth_normalized"], 
                                                             current_texts["pred_text_beam_search"][0].text)
 
                 results.append(current_texts)
