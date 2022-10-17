@@ -20,7 +20,7 @@ class DeepSpeech2(BaseModel):
         self.gru = nn.GRU(
             input_size=n_feats * 32 // 2 // 2,
             hidden_size=fc_hidden,
-            num_layers=3,
+            num_layers=4,
             bidirectional=True,
             batch_first=True,
         )

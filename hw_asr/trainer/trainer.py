@@ -36,6 +36,7 @@ class Trainer(BaseTrainer):
             lr_scheduler=None,
             len_epoch=None,
             skip_oom=True,
+            log_beam_size=10,
     ):
         super().__init__(model, criterion, metrics, optimizer, config, device)
         self.skip_oom = skip_oom
@@ -52,6 +53,7 @@ class Trainer(BaseTrainer):
         self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
         self.lr_scheduler = lr_scheduler
         self.log_step = 50
+        self.log_beam_size = log_beam_size
 
         self.train_metrics = MetricTracker(
             "loss", "grad norm", *[m.name for m in self.metrics], writer=self.writer
@@ -210,7 +212,8 @@ class Trainer(BaseTrainer):
             *args,
             **kwargs,
     ):
-        # TODO: implement logging of beam search results
+        beam_size = self.log_beam_size
+
         if self.writer is None:
             return
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
@@ -220,20 +223,32 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+
+        beam_search_texts = [""] * len(log_probs)
+        for i in range(examples_to_log):
+            beam_search_texts[i] = \
+                self.text_encoder.ctc_beam_search(log_probs[i], log_probs_length[i], beam_size=beam_size)[0].text
+
+        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path, beam_search_texts))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred, target, raw_pred, audio_path, beam_pred in tuples[:examples_to_log]:
             target = BaseTextEncoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
 
+            beam_wer = calc_wer(target, beam_pred) * 100
+            beam_cer = calc_cer(target, beam_pred) * 100
+
             rows[Path(audio_path).name] = {
                 "target": target,
-                "raw prediction": raw_pred,
-                "predictions": pred,
-                "wer": wer,
-                "cer": cer,
+                "raw argmax prediction": raw_pred,
+                "argmax predictions": pred,
+                "beam search predictions": beam_pred,
+                "wer (argmax)": wer,
+                "cer (argmax)": cer,
+                f"wer (beam search, beam={beam_size})": beam_wer,
+                f"cer (beam search, beam={beam_size})": beam_cer,
             }
         self.writer.add_table("predictions", pd.DataFrame.from_dict(rows, orient="index"))
 
