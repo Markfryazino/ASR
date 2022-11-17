@@ -19,7 +19,7 @@
    ```
 1. Скачиваем чекпоинт модели.
    ```shell
-   wget https://downloader.disk.yandex.ru/disk/9bc99c18ca3f76ffae9cc29b8526c470c4313180b23f55f0ba8273ee4e7ae94f/634de5c9/8QS15owusqz-m1yNRn8_WS_okE79_hbaLxZm6TiDTjv1bV_hbzZmTIPnkE1aXuSNyg8NnWG9-6x-oxTaSLdxDA%3D%3D?uid=0&filename=model_best.pth&disposition=attachment&hash=ilgsfWA8OM84RYEizPtdxA%2BC3St4e5HXCV1FKmy6t4K7BBBjODfJC7b23vIzWYt/q/J6bpmRyOJonT3VoXnDag%3D%3D%3A&limit=0&content_type=application%2Fzip&owner_uid=1184656726&fsize=230184375&hid=579b5415d0a32fa41dd0cb2675e69544&media_type=compressed&tknv=v2
+   wget https://downloader.disk.yandex.ru/disk/7a2747e39158f3e70bbb493407f3b1e0bc0f69e9d780cf19c4c7ec05f01db602/6376b7ff/8QS15owusqz-m1yNRn8_WS_okE79_hbaLxZm6TiDTjv1bV_hbzZmTIPnkE1aXuSNyg8NnWG9-6x-oxTaSLdxDA%3D%3D?uid=0&filename=model_best.pth&disposition=attachment&hash=ilgsfWA8OM84RYEizPtdxA%2BC3St4e5HXCV1FKmy6t4K7BBBjODfJC7b23vIzWYt/q/J6bpmRyOJonT3VoXnDag%3D%3D%3A&limit=0&content_type=application%2Fzip&owner_uid=1184656726&fsize=230184375&hid=579b5415d0a32fa41dd0cb2675e69544&media_type=compressed&tknv=v2
    ```
 1. Запускаем инференс.
    ```shell
